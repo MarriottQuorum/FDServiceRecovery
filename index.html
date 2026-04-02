@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Front Desk Service Recovery</title>
+  <style>
+    :root{
+      --bg1:#10141c;
+      --bg2:#030507;
+      --panel:rgba(10,12,16,.86);
+      --panel-border:rgba(255,255,255,.08);
+      --text:#fff;
+      --muted:rgba(255,255,255,.72);
+      --btn:#1f2937;
+      --btn-hover:#374151;
+      --shadow:0 16px 40px rgba(0,0,0,.38);
+      --radius:20px;
+      --gold:#d1a62a;
+    }
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      min-height:100%;
+      font-family:Arial,Helvetica,sans-serif;
+      color:var(--text);
+      background:radial-gradient(circle at top,#1b2230 0%,var(--bg1) 42%,var(--bg2) 100%);
+    }
+    body{
+      display:grid;
+      place-items:center;
+      padding:12px;
+      overflow:hidden;
+    }
+    .app{
+      width:100%;
+      min-height:calc(100vh - 24px);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:12px;
+    }
+    .stage,
+    .controls-panel{
+      width:min(94vw,64vh);
+    }
+    .stage{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
+    .card-shell{
+      width:100%;
+      aspect-ratio:2 / 3;
+      position:relative;
+      perspective:1800px;
+      filter:drop-shadow(0 18px 40px rgba(0,0,0,.42));
+    }
+    .card-flip{
+      position:absolute;
+      inset:0;
+      transform-style:preserve-3d;
+      transition:transform 900ms cubic-bezier(.2,.8,.2,1);
+    }
+    .card-shell.is-flipped .card-flip{
+      transform:rotateY(180deg);
+    }
+    .card-face{
+      position:absolute;
+      inset:0;
+      backface-visibility:hidden;
+      border-radius:28px;
+      overflow:hidden;
+    }
+    .card-front{ transform:rotateY(0deg); background:#f6f2ea; }
+    .card-back{ transform:rotateY(180deg); background:#08152b; }
+
+    .template-img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      user-select:none;
+      pointer-events:none;
+    }
+
+    .overlay{
+      position:absolute;
+      inset:0;
+      padding:6.2% 8%;
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+    .title{
+      flex:0 0 auto;
+      min-height:11%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      text-transform:uppercase;
+      font-weight:800;
+      letter-spacing:.02em;
+      color:var(--gold);
+      font-size:clamp(1rem,3.4vw,2.35rem);
+      line-height:.97;
+      text-wrap:balance;
+      padding:0 8%;
+      margin-top:2%;
+      margin-bottom:3%;
+    }
+    .body{
+      flex:1 1 auto;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      min-height:0;
+      padding:1% 6% 0 6%;
+      text-align:center;
+      color:#2d2a28;
+    }
+    .section-label{
+      color:#c89f2d;
+      text-transform:uppercase;
+      letter-spacing:.03em;
+      font-size:clamp(.78rem,1.8vw,1.45rem);
+      line-height:1.05;
+      margin-bottom:1.4%;
+      text-wrap:balance;
+    }
+    .scenario-wrap{
+      width:100%;
+      margin-top:1%;
+      margin-bottom:3%;
+    }
+    .scenario-text,
+    .answer-text,
+    .image-prompt{
+      font-size:clamp(.95rem,2vw,1.7rem);
+      line-height:1.24;
+      color:#2d2a28;
+      text-wrap:balance;
+    }
+    .answer-wrap{
+      width:100%;
+      margin-top:auto;
+      margin-bottom:11%;
+      transition:opacity 220ms ease, transform 220ms ease;
+    }
+    .answer-wrap.hidden{
+      opacity:0;
+      transform:translateY(10px);
+      visibility:hidden;
+      height:0;
+      margin:0;
+      overflow:hidden;
+      pointer-events:none;
+    }
+    .image-box{
+      width:94%;
+      max-height:60%;
+      flex:1 1 auto;
+      min-height:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-top:1%;
+      margin-bottom:3%;
+      overflow:hidden;
+      border-radius:4px;
+    }
+    .image-box img{
+      max-width:100%;
+      max-height:100%;
+      object-fit:contain;
+      display:block;
+      border-radius:4px;
+    }
+    .image-prompt{
+      color:#c89f2d;
+      text-transform:uppercase;
+      line-height:1.12;
+      font-size:clamp(.95rem,2.2vw,1.75rem);
+      margin-bottom:10%;
+      padding:0 2%;
+    }
+    .footer-id{
+      position:absolute;
+      left:8.3%;
+      bottom:6.1%;
+      color:var(--gold);
+      font-size:clamp(.92rem,2vw,1.65rem);
+      line-height:1;
+      user-select:none;
+    }
+
+    .controls-panel{
+      background:var(--panel);
+      border:1px solid var(--panel-border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .status{
+      text-align:center;
+      color:var(--muted);
+      font-size:.95rem;
+      min-height:1.2em;
+    }
+    .controls{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+    }
+    .goto-row{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:10px;
+    }
+    button, select{
+      width:100%;
+      min-height:46px;
+      border:0;
+      border-radius:14px;
+      font-size:.95rem;
+      font-weight:700;
+      box-shadow:0 8px 18px rgba(0,0,0,.2);
+    }
+    button{
+      background:var(--btn);
+      color:#fff;
+      padding:11px 10px;
+      cursor:pointer;
+      touch-action:manipulation;
+    }
+    button:hover{ background:var(--btn-hover); }
+    button:disabled{ opacity:.55; cursor:not-allowed; }
+    select{
+      background:#111827;
+      color:#fff;
+      padding:0 12px;
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .note{
+      text-align:center;
+      color:var(--muted);
+      font-size:.86rem;
+    }
+    .loading{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(0,0,0,.18);
+      backdrop-filter:blur(2px);
+      font-weight:700;
+    }
+
+    @media (orientation:landscape){
+      .app{ flex-direction:row; align-items:center; justify-content:center; gap:18px; }
+      .stage{ width:min(42vw,58vh); }
+      .controls-panel{ width:min(38vw,420px); }
+      .controls{ grid-template-columns:1fr; }
+    }
+
+    @media (max-height:860px){
+      .stage,.controls-panel{ width:min(94vw,60vh); }
+    }
+
+    @media (max-width:720px){
+      body{ padding:8px; }
+      .app{ gap:8px; }
+      .stage,.controls-panel{ width:min(97vw,62vh); }
+      .controls{ grid-template-columns:1fr; }
+      .goto-row{ grid-template-columns:1fr; }
+      .title{ font-size:clamp(.95rem,4.6vw,1.9rem); }
+      .scenario-text,.answer-text,.image-prompt{ font-size:clamp(.92rem,3.2vw,1.28rem); }
+      .section-label{ font-size:clamp(.74rem,2.7vw,1.1rem); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="stage">
+      <div class="card-shell" id="cardShell">
+        <div class="card-flip">
+          <div class="card-face card-front">
+            <img class="template-img" id="frontTemplate" alt="Front card template" />
+            <div class="overlay">
+              <div class="title" id="cardTitle"></div>
+              <div class="body">
+                <div class="scenario-wrap" id="scenarioWrap">
+                  <div class="section-label">Scenario</div>
+                  <div class="scenario-text" id="scenarioText"></div>
+                </div>
+
+                <div class="image-box" id="imageBox" style="display:none;">
+                  <img id="cardImage" alt="Card illustration" />
+                </div>
+
+                <div class="image-prompt" id="imagePrompt" style="display:none;"></div>
+
+                <div class="answer-wrap hidden" id="answerWrap">
+                  <div class="section-label">Professional Approach</div>
+                  <div class="answer-text" id="answerText"></div>
+                </div>
+              </div>
+              <div class="footer-id" id="cardId"></div>
+            </div>
+          </div>
+
+          <div class="card-face card-back">
+            <img class="template-img" id="backTemplate" alt="Back card template" />
+          </div>
+        </div>
+        <div class="loading" id="loadingMask">Loading cards…</div>
+      </div>
+    </div>
+
+    <div class="controls-panel">
+      <div class="status" id="statusText">Waiting to load cards…</div>
+
+      <div class="goto-row">
+        <select id="gotoSelect">
+          <option value="">Go to card…</option>
+        </select>
+        <button id="gotoBtn">Go To</button>
+      </div>
+
+      <div class="controls">
+        <button id="flipBtn">Flip Card</button>
+        <button id="revealBtn">Reveal Answer</button>
+        <button id="hideBtn">Hide Answer</button>
+        <button id="resetDeckBtn">Reset Deck</button>
+        <button id="fullscreenBtn">Full Screen</button>
+      </div>
+
+      <div class="note">Portrait-first, but responsive for projector/landscape too.</div>
+    </div>
+  </div>
+
+  <script>
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRj2u2mNdNoaxrTnuNN3wcDEEZze0pZJEVlnrihL0UAA3cIyZop2xwRu5rsSgcsnIJ2PWDacDNaSjr9/pub?output=csv";
+
+    // Your visible card content should sit on the BLANK template.
+    // The ornamental "Front Desk Service Recovery" side should be the BACK shown during the flip.
+    const FRONT_TEMPLATE_CANDIDATES = [
+      "Card Front Horizontal Master.png",
+      "front.png", "Front.png",
+      "assets/cards/Card Front Horizontal Master.png",
+      "assets/cards/front.png", "assets/cards/Front.png"
+    ];
+
+    const BACK_TEMPLATE_CANDIDATES = [
+      "Card Back Horizontal Master.png",
+      "back.png", "Back.png",
+      "assets/cards/Card Back Horizontal Master.png",
+      "assets/cards/back.png", "assets/cards/Back.png"
+    ];
+
+    const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "webp"];
+
+    const els = {
+      frontTemplate: document.getElementById("frontTemplate"),
+      backTemplate: document.getElementById("backTemplate"),
+      cardShell: document.getElementById("cardShell"),
+      cardTitle: document.getElementById("cardTitle"),
+      scenarioWrap: document.getElementById("scenarioWrap"),
+      scenarioText: document.getElementById("scenarioText"),
+      imageBox: document.getElementById("imageBox"),
+      cardImage: document.getElementById("cardImage"),
+      imagePrompt: document.getElementById("imagePrompt"),
+      answerWrap: document.getElementById("answerWrap"),
+      answerText: document.getElementById("answerText"),
+      cardId: document.getElementById("cardId"),
+      statusText: document.getElementById("statusText"),
+      flipBtn: document.getElementById("flipBtn"),
+      revealBtn: document.getElementById("revealBtn"),
+      hideBtn: document.getElementById("hideBtn"),
+      resetDeckBtn: document.getElementById("resetDeckBtn"),
+      fullscreenBtn: document.getElementById("fullscreenBtn"),
+      gotoSelect: document.getElementById("gotoSelect"),
+      gotoBtn: document.getElementById("gotoBtn"),
+      loadingMask: document.getElementById("loadingMask")
+    };
+
+    const state = {
+      deck: [],
+      unusedIndices: [],
+      currentCard: null,
+      revealShown: false,
+      isAnimating: false
+    };
+
+    function parseCsvLine(line) {
+      const result = [];
+      let current = "";
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i += 1) {
+        const ch = line[i];
+        const next = line[i + 1];
+        if (ch === '"') {
+          if (inQuotes && next === '"') {
+            current += '"';
+            i += 1;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (ch === "," && !inQuotes) {
+          result.push(current.trim());
+          current = "";
+        } else {
+          current += ch;
+        }
+      }
+      result.push(current.trim());
+      return result;
+    }
+
+    function normalizeCard(row) {
+      return {
+        CardID: (row.CardID || "").trim(),
+        CardType: ((row.CardType || "text").trim().toLowerCase()),
+        Title: (row.Title || "").trim(),
+        Scenario: (row.Scenario || "").trim(),
+        ProfessionalApproach: (row.ProfessionalApproach || "").trim(),
+        ImageURL: (row.ImageURL || "").trim(),
+        ImagePrompt: (row.ImagePrompt || "").trim(),
+        Active: ((row.Active || "Y").trim().toUpperCase()),
+        Category: (row.Category || "").trim(),
+        SortOrder: (row.SortOrder || "").trim()
+      };
+    }
+
+    function isActiveCard(card) {
+      return card.Active === "Y" && card.CardID && card.Title;
+    }
+
+    function refreshDeckPool() {
+      state.unusedIndices = state.deck.map((_, i) => i);
+    }
+
+    function removeFromUnused(index) {
+      state.unusedIndices = state.unusedIndices.filter(i => i !== index);
+    }
+
+    function pickRandomIndex() {
+      if (!state.unusedIndices.length) refreshDeckPool();
+      const poolIndex = Math.floor(Math.random() * state.unusedIndices.length);
+      return state.unusedIndices.splice(poolIndex, 1)[0];
+    }
+
+    function setStatus(text) {
+      els.statusText.textContent = text;
+    }
+
+    function hideAnswer() {
+      state.revealShown = false;
+      els.answerWrap.classList.add("hidden");
+      els.revealBtn.disabled = !state.currentCard || !state.currentCard.ProfessionalApproach || state.isAnimating;
+      els.hideBtn.disabled = true;
+    }
+
+    function showAnswer() {
+      if (!state.currentCard || !state.currentCard.ProfessionalApproach || state.isAnimating) return;
+      state.revealShown = true;
+      els.answerWrap.classList.remove("hidden");
+      els.revealBtn.disabled = true;
+      els.hideBtn.disabled = false;
+    }
+
+    function normalizeAssetId(cardId) {
+      return String(cardId || "").replace(/[^A-Za-z0-9]/g, "");
+    }
+
+    function imageCandidatesForCard(card) {
+      const rawId = String(card.CardID || "").trim();
+      const normalizedId = normalizeAssetId(card.CardID);
+      const localCandidates = [];
+
+      for (const ext of IMAGE_EXTENSIONS) {
+        localCandidates.push(`${rawId}.${ext}`);
+        localCandidates.push(`${normalizedId}.${ext}`);
+        localCandidates.push(`assets/cards/${rawId}.${ext}`);
+        localCandidates.push(`assets/cards/${normalizedId}.${ext}`);
+      }
+
+      return card.ImageURL ? [card.ImageURL, ...localCandidates] : localCandidates;
+    }
+
+    function testImage(src) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(src);
+        img.onerror = () => resolve(null);
+        img.src = src;
+      });
+    }
+
+    async function resolveFirstWorkingImage(candidates) {
+      for (const src of candidates) {
+        const found = await testImage(src);
+        if (found) return found;
+      }
+      return "";
+    }
+
+    async function resolveCardImage(card) {
+      if (card.CardType !== "image") return "";
+      return resolveFirstWorkingImage(imageCandidatesForCard(card));
+    }
+
+    async function renderCard(card) {
+      state.currentCard = card;
+      els.cardTitle.textContent = card.Title;
+      els.cardId.textContent = card.CardID;
+      els.scenarioText.textContent = card.Scenario;
+      els.answerText.textContent = card.ProfessionalApproach || "";
+
+      const isImage = card.CardType === "image";
+      const hasAnswer = !!card.ProfessionalApproach;
+
+      els.scenarioWrap.style.display = isImage ? "none" : "";
+      els.imageBox.style.display = "none";
+      els.imagePrompt.style.display = "none";
+      els.cardImage.removeAttribute("src");
+
+      if (isImage) {
+        const imgSrc = await resolveCardImage(card);
+        if (imgSrc) {
+          els.cardImage.src = imgSrc;
+          els.imageBox.style.display = "";
+        }
+        if (card.ImagePrompt) {
+          els.imagePrompt.textContent = card.ImagePrompt;
+          els.imagePrompt.style.display = "";
+        }
+      }
+
+      state.revealShown = false;
+      els.answerWrap.classList.add("hidden");
+      els.revealBtn.disabled = !hasAnswer || state.isAnimating;
+      els.hideBtn.disabled = true;
+    }
+
+    function wait(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function updateStatusForCard(card) {
+      const left = state.unusedIndices.length;
+      setStatus(`Showing ${card.CardID}${left ? ` • ${left} card(s) left before reshuffle` : " • deck will reshuffle on next draw"}`);
+    }
+
+    async function showCardByIndex(index, sourceLabel = "Showing") {
+      if (!state.deck.length || state.isAnimating || index < 0 || index >= state.deck.length) return;
+
+      state.isAnimating = true;
+      els.flipBtn.disabled = true;
+      els.revealBtn.disabled = true;
+      els.hideBtn.disabled = true;
+      els.gotoBtn.disabled = true;
+
+      const nextCard = state.deck[index];
+      removeFromUnused(index);
+      setStatus("Flipping card…");
+
+      els.cardShell.classList.add("is-flipped");
+      await wait(1000); // longer hold on the back
+      await renderCard(nextCard);
+      await wait(900);  // keep the back visible a bit longer
+      els.cardShell.classList.remove("is-flipped");
+      await wait(950);
+
+      state.isAnimating = false;
+      els.flipBtn.disabled = false;
+      els.revealBtn.disabled = !nextCard.ProfessionalApproach;
+      els.hideBtn.disabled = true;
+      els.gotoBtn.disabled = false;
+
+      const left = state.unusedIndices.length;
+      setStatus(`${sourceLabel} ${nextCard.CardID}${left ? ` • ${left} card(s) left before reshuffle` : " • deck will reshuffle on next draw"}`);
+    }
+
+    async function flipToNextCard() {
+      const index = pickRandomIndex();
+      await showCardByIndex(index, "Showing");
+    }
+
+    async function resetDeck() {
+      refreshDeckPool();
+      hideAnswer();
+      state.currentCard = null;
+      els.cardTitle.textContent = "";
+      els.scenarioText.textContent = "";
+      els.answerText.textContent = "";
+      els.cardId.textContent = "";
+      els.cardImage.removeAttribute("src");
+      els.imageBox.style.display = "none";
+      els.imagePrompt.style.display = "none";
+      els.scenarioWrap.style.display = "";
+      els.cardShell.classList.remove("is-flipped");
+      els.revealBtn.disabled = true;
+      els.hideBtn.disabled = true;
+      setStatus("Deck reset.");
+    }
+
+    async function toggleFullscreen() {
+      try {
+        if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+        else await document.exitFullscreen();
+      } catch (_) {}
+      els.fullscreenBtn.textContent = document.fullscreenElement ? "Exit Full Screen" : "Full Screen";
+    }
+
+    async function loadSheetData() {
+      const res = await fetch(SHEET_URL);
+      const csv = await res.text();
+      const cleaned = csv.replace(/^\uFEFF/, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+      const lines = cleaned.split("\n").filter(Boolean);
+      if (!lines.length) return [];
+
+      const headers = parseCsvLine(lines[0]);
+      const rows = lines.slice(1).map(line => {
+        const values = parseCsvLine(line);
+        const obj = {};
+        headers.forEach((h, i) => obj[h] = values[i] || "");
+        return normalizeCard(obj);
+      });
+
+      return rows.filter(isActiveCard);
+    }
+
+    function populateGotoMenu() {
+      els.gotoSelect.innerHTML = '<option value="">Go to card…</option>';
+      const sorted = [...state.deck].sort((a, b) => {
+        const aKey = a.SortOrder ? Number(a.SortOrder) : Number.MAX_SAFE_INTEGER;
+        const bKey = b.SortOrder ? Number(b.SortOrder) : Number.MAX_SAFE_INTEGER;
+        if (aKey !== bKey) return aKey - bKey;
+        return a.CardID.localeCompare(b.CardID);
+      });
+
+      sorted.forEach(card => {
+        const option = document.createElement("option");
+        option.value = card.CardID;
+        option.textContent = `${card.CardID} — ${card.Title}`;
+        els.gotoSelect.appendChild(option);
+      });
+    }
+
+    async function goToSelectedCard() {
+      const value = els.gotoSelect.value;
+      if (!value) return;
+      const index = state.deck.findIndex(card => card.CardID === value);
+      if (index >= 0) {
+        await showCardByIndex(index, "Showing");
+      }
+    }
+
+    async function init() {
+      const frontSrc = await resolveFirstWorkingImage(FRONT_TEMPLATE_CANDIDATES);
+      const backSrc = await resolveFirstWorkingImage(BACK_TEMPLATE_CANDIDATES);
+      if (frontSrc) els.frontTemplate.src = frontSrc;
+      if (backSrc) els.backTemplate.src = backSrc;
+
+      els.flipBtn.addEventListener("click", flipToNextCard);
+      els.revealBtn.addEventListener("click", showAnswer);
+      els.hideBtn.addEventListener("click", hideAnswer);
+      els.resetDeckBtn.addEventListener("click", resetDeck);
+      els.fullscreenBtn.addEventListener("click", toggleFullscreen);
+      els.gotoBtn.addEventListener("click", goToSelectedCard);
+      els.gotoSelect.addEventListener("change", () => { els.gotoBtn.disabled = !els.gotoSelect.value || state.isAnimating; });
+
+      document.addEventListener("fullscreenchange", () => {
+        els.fullscreenBtn.textContent = document.fullscreenElement ? "Exit Full Screen" : "Full Screen";
+      });
+
+      setStatus("Loading cards…");
+
+      try {
+        state.deck = await loadSheetData();
+        refreshDeckPool();
+        populateGotoMenu();
+
+        if (!state.deck.length) {
+          setStatus("No active cards found. Check your Google Sheet and Active column.");
+          return;
+        }
+
+        els.revealBtn.disabled = true;
+        els.hideBtn.disabled = true;
+        els.gotoBtn.disabled = true;
+        setStatus("Ready. Flip a card or choose one from Go To.");
+      } catch (err) {
+        console.error(err);
+        setStatus("Could not load Google Sheet. Check your published CSV link.");
+      } finally {
+        els.loadingMask.style.display = "none";
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
