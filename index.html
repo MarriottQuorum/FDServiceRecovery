@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Front Desk Service Recovery</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -24,21 +26,67 @@
               <div class="image-layout" id="imageLayout"><div class="image-box"><img id="cardImage" alt="Card image"></div><div class="image-prompt" id="imagePrompt"></div><div class="image-answer hidden" id="imageAnswerWrap"><div class="section-label">Professional Approach</div><div class="section-text" id="imageAnswerText"></div></div></div>
               <div class="card-id" id="cardId"></div>
             </div>
-            <div class="tap-zone tap-zone-header" id="headerTapZone" role="button" tabindex="0" aria-label="Draw next card"></div>
+            <div class="tap-zone tap-zone-header" id="headerTapZone" role="button" tabindex="0" aria-label="Next card or round"></div>
             <div class="tap-zone tap-zone-center" id="centerTapZone" role="button" tabindex="0" aria-label="Show or hide professional approach"></div>
-            <div class="tap-zone tap-zone-footer" id="footerTapZone" role="button" tabindex="0" aria-label="Draw next card"></div>
+            <div class="tap-zone tap-zone-footer" id="footerTapZone" role="button" tabindex="0" aria-label="Next card or round"></div>
           </div>
         </div>
         <div class="loading" id="loadingMask">Loading cards…</div>
       </div>
     </div>
+
     <div class="controls-panel" id="controlsPanel">
       <div class="panel-top"><div class="status" id="statusText">Loading cards…</div><button class="panel-hide-btn" id="hideControlsBtn" type="button">Hide Controls</button></div>
+      <div class="quick-row"><button id="howToPlayBtn" type="button">How to Play</button><button id="gameModeBtn" type="button">Game Mode</button></div>
+      <div class="mode-banner" id="modeBanner" hidden><span id="modeName">Standard Deck</span><button id="exitModeBtn" type="button">Exit Mode</button></div>
       <div class="goto-row"><select id="gotoSelect" aria-label="Go to card"><option value="">Go to card…</option></select><button id="gotoBtn" type="button">Go To</button></div>
       <div class="controls"><button id="flipBtn" type="button">Flip Card</button><button id="revealBtn" type="button">Reveal Answer</button><button id="hideBtn" type="button">Hide Answer</button><button id="resetDeckBtn" type="button">Reset Deck</button><button id="fullscreenBtn" type="button">Full Screen</button></div>
+      <div class="challenge-score" id="challengeScore" hidden><div id="challengeProgress">Card 1 of 10</div><div class="challenge-buttons"><button id="challengeMissBtn" type="button">Missed It</button><button id="challengeGotBtn" type="button">Got It</button></div></div>
     </div>
   </div>
+
   <button class="show-controls-btn" id="showControlsBtn" type="button" hidden>☰ Controls</button>
+
+  <div class="modal-backdrop" id="howToPlayModal" hidden>
+    <section class="modal-card instructions-modal" role="dialog" aria-modal="true" aria-labelledby="howToTitle">
+      <div class="modal-head"><h2 id="howToTitle">How to Play</h2><button class="modal-close" data-close="howToPlayModal" type="button">×</button></div>
+      <div class="modal-body instructions-copy">
+        <p>Draw a card and read the scenario, situation, or question. Respond before revealing the Professional Approach.</p>
+        <h3>Scenario</h3><p>Put yourself into the situation and respond as if the guest were standing in front of you. What actions would you take? What would you say? How would you approach the situation?</p>
+        <h3>Bonvoy</h3><p>Answer the knowledge question about the Marriott Bonvoy program.</p>
+        <h3>Level Up</h3><p><strong>Statement cards:</strong> Improve or “level up” something an agent said.<br><strong>Picture cards:</strong> Decide what is wrong in the image and explain how it might impact the guest.</p>
+        <p class="instructions-finish"><strong>After each card:</strong> Discuss what worked, what could be stronger, then reveal the Professional Approach and compare.</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="gameModeModal" hidden>
+    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="gameModeTitle">
+      <div class="modal-head"><h2 id="gameModeTitle">Choose a Game Mode</h2><button class="modal-close" data-close="gameModeModal" type="button">×</button></div>
+      <div class="modal-body mode-list">
+        <button class="mode-choice" data-mode="standard" type="button"><strong>Standard Deck</strong><span>Random cards from the full deck.</span></button>
+        <button class="mode-choice" data-mode="category" type="button"><strong>Pick a Category</strong><span>Choose a category each round, then get a random card from it.</span></button>
+        <button class="mode-choice" data-mode="elimination" type="button"><strong>Category Elimination</strong><span>Complete one card from every category. Each category disappears after it is played.</span></button>
+        <button class="mode-choice" data-mode="roulette" type="button"><strong>Category Roulette</strong><span>The game chooses the category and a random card for you.</span></button>
+        <button class="mode-choice" data-mode="challenge" type="button"><strong>10-Card Challenge</strong><span>Play ten random cards and track how many the group gets right.</span></button>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="categoryModal" hidden>
+    <section class="modal-card category-modal" role="dialog" aria-modal="true" aria-labelledby="categoryTitle">
+      <div class="modal-head"><h2 id="categoryTitle">Choose a Category</h2><button class="modal-close" data-close="categoryModal" type="button">×</button></div>
+      <div class="modal-body"><div class="category-grid" id="categoryGrid"></div><div class="category-progress" id="categoryProgress"></div></div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="resultModal" hidden>
+    <section class="modal-card result-modal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+      <div class="modal-head"><h2 id="resultTitle">Game Complete</h2><button class="modal-close" data-close="resultModal" type="button">×</button></div>
+      <div class="modal-body"><div class="result-message" id="resultMessage"></div><button id="playAgainBtn" type="button">Play Again</button></div>
+    </section>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>
