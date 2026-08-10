@@ -106,7 +106,12 @@
   display:none;
 }
 
-/* Desktop full-screen / hidden-controls mode keeps a small floating HUD. */
+/* Always keep the controls-expansion button above a floating multiplayer HUD. */
+.show-controls-btn{
+  z-index:180!important;
+}
+
+/* Desktop full-screen / hidden-controls mode keeps a small floating HUD, but leaves room for the Controls button. */
 @media (min-width:721px){
   .app.controls-hidden .controls-panel{
     display:contents!important;
@@ -118,7 +123,7 @@
     position:fixed;
     z-index:120;
     right:12px;
-    top:12px;
+    top:66px;
     left:auto;
     transform:none;
     width:min(34vw,430px);
