@@ -14,7 +14,9 @@
     <div class="stage">
       <div class="card-shell" id="cardShell">
         <div class="card-flip">
-          <div class="card-face card-logo-face" id="logoFace" role="button" tabindex="0" aria-label="Draw a card"><img class="template-img" id="logoTemplate" alt="Decorative card front"></div>
+          <div class="card-face card-logo-face" id="logoFace" role="button" tabindex="0" aria-label="Draw a card">
+            <img class="template-img" id="logoTemplate" alt="Decorative card front">
+          </div>
           <div class="card-face card-content-face">
             <img class="template-img" id="contentTemplate" alt="Content card template">
             <div class="content-overlay">
@@ -23,7 +25,11 @@
                 <div class="text-block"><div class="section-label">Scenario</div><div class="section-text scenario-text" id="scenarioText"></div></div>
                 <div class="text-block answer-wrap hidden" id="answerWrap"><div class="section-label">Professional Approach</div><div class="section-text answer-text" id="answerText"></div></div>
               </div>
-              <div class="image-layout" id="imageLayout"><div class="image-box"><img id="cardImage" alt="Card image"></div><div class="image-prompt" id="imagePrompt"></div><div class="image-answer hidden" id="imageAnswerWrap"><div class="section-label">Professional Approach</div><div class="section-text" id="imageAnswerText"></div></div></div>
+              <div class="image-layout" id="imageLayout">
+                <div class="image-box"><img id="cardImage" alt="Card image"></div>
+                <div class="image-prompt" id="imagePrompt"></div>
+                <div class="image-answer hidden" id="imageAnswerWrap"><div class="section-label">Professional Approach</div><div class="section-text" id="imageAnswerText"></div></div>
+              </div>
               <div class="card-id" id="cardId"></div>
             </div>
             <div class="tap-zone tap-zone-header" id="headerTapZone" role="button" tabindex="0" aria-label="Next card or round"></div>
@@ -35,23 +41,41 @@
       </div>
     </div>
 
+    <div class="game-hud" id="gameHud" hidden>
+      <div class="hud-turn" id="hudTurn"></div>
+      <div class="hud-scores" id="hudScores"></div>
+      <div class="hud-actions" id="hudActions"></div>
+    </div>
+
     <div class="controls-panel" id="controlsPanel">
       <div class="panel-top"><div class="status" id="statusText">Loading cards…</div><button class="panel-hide-btn" id="hideControlsBtn" type="button">Hide Controls</button></div>
       <div class="quick-row"><button id="howToPlayBtn" type="button">How to Play</button><button id="gameModeBtn" type="button">Game Mode</button></div>
       <div class="mode-banner" id="modeBanner" hidden><span id="modeName">Standard Deck</span><button id="exitModeBtn" type="button">Exit Mode</button></div>
       <div class="goto-row"><select id="gotoSelect" aria-label="Go to card"><option value="">Go to card…</option></select><button id="gotoBtn" type="button">Go To</button></div>
-      <div class="controls"><button id="flipBtn" type="button">Flip Card</button><button id="revealBtn" type="button">Reveal Answer</button><button id="hideBtn" type="button">Hide Answer</button><button id="resetDeckBtn" type="button">Reset Deck</button><button id="fullscreenBtn" type="button">Full Screen</button></div>
+      <div class="controls"><button id="flipBtn" type="button">Flip Card (Next)</button><button id="revealBtn" type="button">Reveal Answer</button><button id="hideBtn" type="button">Hide Answer</button><button id="resetDeckBtn" type="button">Reset Deck</button><button id="fullscreenBtn" type="button">Full Screen</button></div>
       <div class="challenge-score" id="challengeScore" hidden><div id="challengeProgress">Card 1 of 10</div><div class="challenge-buttons"><button id="challengeMissBtn" type="button">Missed It</button><button id="challengeGotBtn" type="button">Got It</button></div></div>
     </div>
   </div>
 
   <button class="show-controls-btn" id="showControlsBtn" type="button" hidden>☰ Controls</button>
 
+  <div class="touch-hint" id="touchHint" hidden>
+    <div><strong>Digital Deck Controls</strong></div>
+    <div>Tap the <strong>white center</strong> to reveal/hide the answer.</div>
+    <div>Tap the <strong>blue top or bottom</strong> for the next card.</div>
+    <button id="touchHintDismiss" type="button">Got It</button>
+  </div>
+
   <div class="modal-backdrop" id="howToPlayModal" hidden>
     <section class="modal-card instructions-modal" role="dialog" aria-modal="true" aria-labelledby="howToTitle">
       <div class="modal-head"><h2 id="howToTitle">How to Play</h2><button class="modal-close" data-close="howToPlayModal" type="button">×</button></div>
       <div class="modal-body instructions-copy">
         <p>Draw a card and read the scenario, situation, or question. Respond before revealing the Professional Approach.</p>
+        <div class="digital-instructions">
+          <h3>Using the Digital Deck</h3>
+          <p><strong>Reveal / hide:</strong> Tap the white center of the card.<br><strong>Next card:</strong> Tap the blue title area or blue card-number/footer area.<br><strong>Controls:</strong> “Flip Card (Next)” does the same thing as tapping a blue area.</p>
+          <p>In Full Screen or mobile deck view, use the card touch zones when the navigation controls are hidden.</p>
+        </div>
         <h3>Scenario</h3><p>Put yourself into the situation and respond as if the guest were standing in front of you. What actions would you take? What would you say? How would you approach the situation?</p>
         <h3>Bonvoy</h3><p>Answer the knowledge question about the Marriott Bonvoy program.</p>
         <h3>Level Up</h3><p><strong>Statement cards:</strong> Improve or “level up” something an agent said.<br><strong>Picture cards:</strong> Decide what is wrong in the image and explain how it might impact the guest.</p>
@@ -64,11 +88,35 @@
     <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="gameModeTitle">
       <div class="modal-head"><h2 id="gameModeTitle">Choose a Game Mode</h2><button class="modal-close" data-close="gameModeModal" type="button">×</button></div>
       <div class="modal-body mode-list">
-        <button class="mode-choice" data-mode="standard" type="button"><strong>Standard Deck</strong><span>Random cards from the full deck.</span></button>
+        <div class="mode-section-label">Solo / Group</div>
+        <button class="mode-choice" data-mode="standard" type="button"><strong>Standard Deck</strong><span>Default mode. Random cards from the full deck.</span></button>
         <button class="mode-choice" data-mode="category" type="button"><strong>Pick a Category</strong><span>Choose a category each round, then get a random card from it.</span></button>
         <button class="mode-choice" data-mode="elimination" type="button"><strong>Category Elimination</strong><span>Complete one card from every category. Each category disappears after it is played.</span></button>
-        <button class="mode-choice" data-mode="roulette" type="button"><strong>Category Roulette</strong><span>The game chooses the category and a random card for you.</span></button>
         <button class="mode-choice" data-mode="challenge" type="button"><strong>10-Card Challenge</strong><span>Play ten random cards and track how many the group gets right.</span></button>
+        <div class="mode-section-label multiplayer-label">Multiplayer</div>
+        <button class="mode-choice" data-mode="roundrobin" type="button"><strong>Round Robin</strong><span>2–5 players take turns answering. Score each player and rotate automatically.</span></button>
+        <button class="mode-choice" data-mode="host" type="button"><strong>Host Mode</strong><span>A host presents each card and awards the point to any player or team.</span></button>
+        <button class="mode-choice" data-mode="passplay" type="button"><strong>Pass &amp; Play</strong><span>One player asks, the next answers, then the phone passes around the group.</span></button>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="multiplayerSetupModal" hidden>
+    <section class="modal-card setup-modal" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+      <div class="modal-head"><h2 id="setupTitle">Multiplayer Setup</h2><button class="modal-close" data-close="multiplayerSetupModal" type="button">×</button></div>
+      <div class="modal-body">
+        <label class="setup-label" for="playerCount">Number of players / teams</label>
+        <select id="playerCount"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
+        <div class="player-name-grid" id="playerNameGrid"></div>
+        <div id="roundSetupWrap">
+          <label class="setup-label" for="roundCount">Rounds per player</label>
+          <select id="roundCount"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
+        </div>
+        <div id="hostCardsWrap" hidden>
+          <label class="setup-label" for="hostCardCount">Number of cards</label>
+          <select id="hostCardCount"><option value="5">5</option><option value="10" selected>10</option><option value="15">15</option><option value="20">20</option></select>
+        </div>
+        <button id="startMultiplayerBtn" type="button">Start Game</button>
       </div>
     </section>
   </div>
