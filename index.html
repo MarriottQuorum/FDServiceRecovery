@@ -8,6 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Front Desk Service Recovery</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="hud.css" />
 </head>
 <body>
   <div class="app" id="app">
@@ -41,16 +42,17 @@
       </div>
     </div>
 
-    <div class="game-hud" id="gameHud" hidden>
-      <div class="hud-turn" id="hudTurn"></div>
-      <div class="hud-scores" id="hudScores"></div>
-      <div class="hud-actions" id="hudActions"></div>
-    </div>
-
     <div class="controls-panel" id="controlsPanel">
       <div class="panel-top"><div class="status" id="statusText">Loading cards…</div><button class="panel-hide-btn" id="hideControlsBtn" type="button">Hide Controls</button></div>
       <div class="quick-row"><button id="howToPlayBtn" type="button">How to Play</button><button id="gameModeBtn" type="button">Game Mode</button></div>
       <div class="mode-banner" id="modeBanner" hidden><span id="modeName">Standard Deck</span><button id="exitModeBtn" type="button">Exit Mode</button></div>
+
+      <div class="game-hud" id="gameHud" hidden>
+        <div class="hud-turn" id="hudTurn"></div>
+        <div class="hud-scores" id="hudScores"></div>
+        <div class="hud-actions" id="hudActions"></div>
+      </div>
+
       <div class="goto-row"><select id="gotoSelect" aria-label="Go to card"><option value="">Go to card…</option></select><button id="gotoBtn" type="button">Go To</button></div>
       <div class="controls"><button id="flipBtn" type="button">Flip Card (Next)</button><button id="revealBtn" type="button">Reveal Answer</button><button id="hideBtn" type="button">Hide Answer</button><button id="resetDeckBtn" type="button">Reset Deck</button><button id="fullscreenBtn" type="button">Full Screen</button></div>
       <div class="challenge-score" id="challengeScore" hidden><div id="challengeProgress">Card 1 of 10</div><div class="challenge-buttons"><button id="challengeMissBtn" type="button">Missed It</button><button id="challengeGotBtn" type="button">Got It</button></div></div>
