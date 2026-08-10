@@ -1,0 +1,129 @@
+/* Multiplayer HUD refinements */
+
+/* Default: HUD is integrated into the controls panel instead of floating below it. */
+.controls-panel .game-hud{
+  width:100%;
+  margin:0;
+  padding:9px 10px;
+  border-radius:12px;
+  background:rgba(13,17,24,.78);
+  border:1px solid rgba(207,165,44,.20);
+  box-shadow:none;
+}
+
+.controls-panel .hud-turn{
+  font-size:.9rem;
+  line-height:1.2;
+  margin:0;
+}
+
+.controls-panel .hud-scores{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:5px;
+}
+
+.controls-panel .score-chip{
+  padding:4px 7px;
+  font-size:.78rem;
+}
+
+.controls-panel .hud-actions{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:6px;
+}
+
+.controls-panel .hud-actions > button,
+.controls-panel .hud-actions .host-score-grid button{
+  min-height:36px;
+  padding:7px 8px;
+  font-size:.8rem;
+}
+
+/* Host scoring uses all available width instead of a fixed two-column grid. */
+.controls-panel .host-score-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(92px,1fr));
+  gap:6px;
+  width:100%;
+}
+
+/* Keep No Point visually secondary while still allowing it to share the row. */
+.controls-panel .host-score-grid button:last-child{
+  background:#2a303a;
+}
+
+/* On wider desktop controls, let all player buttons fit across when possible. */
+@media (min-width:1100px){
+  .controls-panel{
+    width:min(40vw,560px);
+  }
+  .controls-panel .host-score-grid{
+    grid-template-columns:repeat(auto-fit,minmax(88px,1fr));
+  }
+}
+
+/* Preserve the compact mobile experience. */
+@media (max-width:720px){
+  .controls-panel .game-hud{
+    width:100%;
+    padding:8px;
+  }
+  .controls-panel .hud-turn{
+    font-size:.88rem;
+  }
+  .controls-panel .hud-scores{
+    gap:5px;
+  }
+  .controls-panel .host-score-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+/* In mobile immersive/full-screen mode the panel itself is hidden, so expose only the HUD. */
+.immersive-mobile .controls-panel{
+  display:contents!important;
+}
+.immersive-mobile .controls-panel > :not(.game-hud){
+  display:none!important;
+}
+.immersive-mobile .controls-panel .game-hud{
+  position:fixed;
+  z-index:120;
+  left:50%;
+  top:max(8px,env(safe-area-inset-top));
+  transform:translateX(-50%);
+  width:min(94vw,480px);
+  padding:7px 8px;
+  background:rgba(13,17,24,.90);
+  border:1px solid rgba(207,165,44,.22);
+  border-radius:14px;
+  backdrop-filter:blur(4px);
+}
+.immersive-mobile .controls-panel .hud-scores{
+  display:none;
+}
+
+/* Desktop full-screen / hidden-controls mode keeps a small floating HUD. */
+@media (min-width:721px){
+  .app.controls-hidden .controls-panel{
+    display:contents!important;
+  }
+  .app.controls-hidden .controls-panel > :not(.game-hud){
+    display:none!important;
+  }
+  .app.controls-hidden .controls-panel .game-hud:not([hidden]){
+    position:fixed;
+    z-index:120;
+    right:12px;
+    top:12px;
+    left:auto;
+    transform:none;
+    width:min(34vw,430px);
+    background:rgba(13,17,24,.90);
+    backdrop-filter:blur(4px);
+    box-shadow:0 12px 30px rgba(0,0,0,.28);
+  }
+}
